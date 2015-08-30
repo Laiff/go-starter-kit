@@ -9,3 +9,5 @@ src/app/server/data/static/build/
 .pid
 .pid_wds
 .pid_wp
+
+.idea
