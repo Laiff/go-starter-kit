@@ -1,31 +1,27 @@
 import React from 'react';
 import Router from 'react-router';
-import FluxComponent from 'flummox/component';
-import Flux from '../flux';
+import {Provider} from 'react-redux';
 import RenderToString from './RenderToString';
 import loadProps from '#app/utils/loadProps';
 
+import store from '../store';
 import routes from './routes';
 
-const flux = new Flux();
-
-export function run() {
-  // share flux instance
-  window.__flux__ = flux;
+export function run () {
 
   fetch('/api/v1/conf').then((r) => {
     return r.json();
   }).then((conf) => {
 
-    flux.getStore('app').setAppConfig(conf);
+    //flux.getStore('app').setAppConfig(conf);
 
     Router.run(routes, Router.HistoryLocation, (Handler, state) => {
-      const routeHandlerInfo = { flux, state };
-      loadProps(state.routes, 'loadProps', routeHandlerInfo).then(()=> {
+      const routeHandlerInfo = {store, state};
+      loadProps(state.routes, 'loadProps', routeHandlerInfo).then(() => {
         React.render(
-          <FluxComponent flux={flux}>
-            <Handler />
-          </FluxComponent>,
+          <Provider store={store}>
+            {() => <Handler routerState={state}/>}
+          </Provider>,
           document
         );
       });
@@ -40,9 +36,9 @@ require('../styles');
 
 // Style live reload
 if (module.hot) {
-  const refreshStyles = flux.getActions('app').refreshStyles;
-  module.hot.accept('../styles', () => {
-    require('../styles');
-    refreshStyles();
-  });
+  //const refreshStyles = flux.getActions('app').refreshStyles;
+  //module.hot.accept('../styles', () => {
+  //  require('../styles');
+  //  refreshStyles();
+  //});
 }

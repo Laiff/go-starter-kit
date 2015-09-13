@@ -1,8 +1,8 @@
 import React from 'react';
 import Router from 'react-router';
 import assign from 'lodash/object/assign';
-import FluxComponent from 'flummox/component';
-import Flux from '../flux';
+import {Provider} from 'react-redux';
+
 import routes from './routes';
 import loadProps from '#app/utils/loadProps';
 
@@ -45,22 +45,22 @@ export default function (options, cbk) {
       }
     });
 
-    const flux = new Flux();
-    flux.getStore('app').setAppConfig(conf);
+    import store from '../store';
+    //flux.getStore('app').setAppConfig(conf);
 
     try {
       router.run((Handler, state) => {
-        const routeHandlerInfo = { flux, state };
-        loadProps(state.routes, 'loadProps', routeHandlerInfo).then(()=> {
+        const routeHandlerInfo = {store, state};
+        loadProps(state.routes, 'loadProps', routeHandlerInfo).then(() => {
           result.body = React.renderToString(
-            <FluxComponent flux={flux}>
-              <Handler />
-            </FluxComponent>
+            <Provider store={store}>
+              {() => <Handler routerState={state}/>}
+            </Provider>
           );
           cbk(result);
         });
       });
-    } catch (error){
+    } catch (error) {
       if (error.redirect) {
         result.redirect = error.redirect;
       } else {
@@ -70,6 +70,5 @@ export default function (options, cbk) {
       // send error
       cbk(result);
     }
-
   })
 };
